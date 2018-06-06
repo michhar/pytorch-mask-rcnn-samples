@@ -1595,7 +1595,8 @@ class MaskRCNN(nn.Module):
             molded_images = molded_images.cuda()
 
         # Wrap in variable
-        molded_images = Variable(molded_images, volatile=True)
+        with torch.no_grad():
+            molded_images = Variable(molded_images)
 
         # Run object detection
         detections, mrcnn_mask = self.predict([molded_images, image_metas], mode='inference')
@@ -1914,12 +1915,13 @@ class MaskRCNN(nn.Module):
             image_metas = image_metas.numpy()
 
             # Wrap in variables
-            images = Variable(images, volatile=True)
-            rpn_match = Variable(rpn_match, volatile=True)
-            rpn_bbox = Variable(rpn_bbox, volatile=True)
-            gt_class_ids = Variable(gt_class_ids, volatile=True)
-            gt_boxes = Variable(gt_boxes, volatile=True)
-            gt_masks = Variable(gt_masks, volatile=True)
+            with torch.no_grad():
+                images = Variable(images)
+                rpn_match = Variable(rpn_match)
+                rpn_bbox = Variable(rpn_bbox)
+                gt_class_ids = Variable(gt_class_ids)
+                gt_boxes = Variable(gt_boxes)
+                gt_masks = Variable(gt_masks)
 
             # To GPU
             if self.config.GPU_COUNT:
