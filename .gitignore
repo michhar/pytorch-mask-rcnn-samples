@@ -1,3 +1,7 @@
+coco
+data
+pycocotools
+.DS_Store
 *.h5
 *.pth
 fish_pics/

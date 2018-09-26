@@ -7,6 +7,7 @@ Then see `Setup_and_Demo.py` for setup and `Train_Fish.ipynb` for the Dataset co
 Labeling with the VGG Image Annotator tool (http://www.robots.ox.ac.uk/~vgg/software/via/):
 
 ![VGG annotated fish pic](images/vgg_annotated_fish.jpg)
+<br><p align="right">Adult Schoolmaster Snappers (Lutjanus apodus); Source: Florent Charpin, http://reefguide.org/pixhtml/schoolmaster2.html</p><br>
 
 See the original repo for more information beyond the two notebooks.
 
