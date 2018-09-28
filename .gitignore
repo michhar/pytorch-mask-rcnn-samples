@@ -1,3 +1,5 @@
+pytorch
+*.bkup
 scripts
 coco
 data

@@ -3,6 +3,7 @@
 #include <math.h>
 
 
+
 void CropAndResizePerBox(
     const float * image_data, 
     const int batch_size,
