@@ -7,7 +7,7 @@ Inspired by:  https://github.com/multimodallearning/pytorch-mask-rcnn
 
 ## Instructions
 
-## Setup and Demo
+### Setup and Demo
 
 Work through the notebooks:
 
