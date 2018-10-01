@@ -10,3 +10,8 @@ crontab==0.22.2
 tablib==0.12.1
 coco==0.4.0
 typing==3.6.6
+pyyaml
+mkl==2019.0
+mkl-include==2019.0
+setuptools
+cmake==3.12.0

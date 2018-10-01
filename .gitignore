@@ -1,3 +1,5 @@
+tmp_install
+bdist
 pytorch
 *.bkup
 scripts

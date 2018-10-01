@@ -6,14 +6,22 @@ import numpy as np
 import skimage.io
 import matplotlib
 import matplotlib.pyplot as plt
+import glob
+from io import BytesIO
+import requests
+from PIL import Image
 
-import coco
+# import coco
+from pycocotools import coco
 import utils
 import model as modellib
 import visualize
 
 import torch
+import pycocotools
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
 
 # Root directory of the project
 ROOT_DIR = os.getcwd()
@@ -24,7 +32,7 @@ MODEL_DIR = os.path.join(ROOT_DIR, "logs")
 # Path to trained weights file
 # Download this file and place in the root of your
 # project (See README file for details)
-COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.pth")
+COCO_MODEL_PATH = os.path.join(ROOT_DIR, "models", "mask_rcnn_coco.pth")
 
 # Directory of images to run detection on
 IMAGE_DIR = os.path.join(ROOT_DIR, "images")
@@ -33,18 +41,20 @@ class InferenceConfig(coco.CocoConfig):
     # Set batch size to 1 since we'll be running inference on
     # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
     # GPU_COUNT = 0 for CPU
-    GPU_COUNT = 1
+    GPU_COUNT = 0
     IMAGES_PER_GPU = 1
+    COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.pth")
+
 
 config = InferenceConfig()
 config.display()
 
 # Create model object.
 model = modellib.MaskRCNN(model_dir=MODEL_DIR, config=config)
-if config.GPU_COUNT:
-    model = model.cuda()
+model = model.to(device=device)
 
 # Load weights trained on MS-COCO
+print(COCO_MODEL_PATH)
 model.load_state_dict(torch.load(COCO_MODEL_PATH))
 
 # COCO Class names
@@ -67,14 +77,9 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
                'teddy bear', 'hair drier', 'toothbrush']
 
 # Load a random image from the images folder
-file_names = next(os.walk(IMAGE_DIR))[2]
-image = skimage.io.imread(os.path.join(IMAGE_DIR, random.choice(file_names)))
+# file_names = glob.glob(os.path.join('images', '*.jpg'))
+# image = skimage.io.imread(os.path.join(random.choice(file_names)))
 
-# Run detection
-results = model.detect([image])
-
-# Visualize results
-r = results[0]
-visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'],
-                            class_names, r['scores'])
-plt.show()
+# Or load file from the internet
+req = requests.get('https://cdn.pixabay.com/photo/2015/06/20/13/55/man-815795__340.jpg')
+image = np.asarray(Image.open(BytesIO(req.content)))
