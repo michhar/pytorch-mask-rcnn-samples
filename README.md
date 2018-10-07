@@ -7,6 +7,8 @@ Inspired by:  https://github.com/multimodallearning/pytorch-mask-rcnn
 
 ## Instructions
 
+* First thing, download the COCO model from [google drive](https://drive.google.com/drive/folders/1LXUgC2IZUYNEoXr05tdqyKFZY0pZyPDc).  You could also choose to start with the ImageNet model.
+
 ## Setup and Demo
 
 Work through the notebooks:
