@@ -23,8 +23,8 @@ from torch.autograd import Variable
 
 import utils
 import visualize
-from nms.nms_wrapper import nms
-from roialign.roi_align.crop_and_resize import CropAndResizeFunction
+from lib.nms.nms_wrapper import nms
+from lib.roi_align.crop_and_resize import CropAndResizeFunction
 
 
 ############################################################
@@ -432,6 +432,7 @@ def pyramid_roi_align(inputs, pool_size, image_shape):
 
     # Assign each ROI to a level in the pyramid based on the ROI area.
     y1, x1, y2, x2 = boxes.chunk(4, dim=1)
+#     y1, x1, y2, x2 = boxes.chunk(4, dim=0)
     h = y2 - y1
     w = x2 - x1
 
@@ -565,7 +566,6 @@ def detection_target_layer(proposals, gt_class_ids, gt_boxes, gt_masks, config):
     # Handle COCO crowds
     # A crowd box in COCO is a bounding box around several instances. Exclude
     # them from training. A crowd box is given a negative class ID.
-    print(torch.nonzero(gt_class_ids < 0).size())
     if torch.nonzero(gt_class_ids < 0).size():
         crowd_ix = torch.nonzero(gt_class_ids < 0)[:, 0]
         non_crowd_ix = torch.nonzero(gt_class_ids > 0)[:, 0]
@@ -1404,7 +1404,7 @@ class MaskRCNN(nn.Module):
     """Encapsulates the Mask RCNN model functionality.
     """
 
-    def __init__(self, config, model_dir):
+    def __init__(self, config, model_dir, num_workers=0):
         """
         config: A Sub-class of the Config class
         model_dir: Directory to save training logs and trained weights
@@ -1417,6 +1417,7 @@ class MaskRCNN(nn.Module):
         self.initialize_weights()
         self.loss_history = []
         self.val_loss_history = []
+        self.num_workers = num_workers
 
     def build(self, config):
         """Build Mask R-CNN architecture.
@@ -1524,7 +1525,7 @@ class MaskRCNN(nn.Module):
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
 
-        # Path to save after each epoch. Include placeholders that get filled by Keras.
+        # Path to save after each epoch. Include placeholders that get filled
         self.checkpoint_path = os.path.join(self.log_dir, "mask_rcnn_{}_*epoch*.pth".format(
             self.config.NAME.lower()))
         self.checkpoint_path = self.checkpoint_path.replace(
@@ -1595,8 +1596,7 @@ class MaskRCNN(nn.Module):
             molded_images = molded_images.cuda()
 
         # Wrap in variable
-        with torch.no_grad():
-            molded_images = Variable(molded_images)
+        molded_images = Variable(molded_images, volatile=True)
 
         # Run object detection
         detections, mrcnn_mask = self.predict([molded_images, image_metas], mode='inference')
@@ -1737,7 +1737,7 @@ class MaskRCNN(nn.Module):
 
             return [rpn_class_logits, rpn_bbox, target_class_ids, mrcnn_class_logits, target_deltas, mrcnn_bbox, target_mask, mrcnn_mask]
 
-    def train_model(self, train_dataset, val_dataset, learning_rate, epochs, layers):
+    def train_model(self, train_dataset, val_dataset, learning_rate, epochs, layers, save_plot=False):
         """Train the model.
         train_dataset, val_dataset: Training and validation Dataset objects.
         learning_rate: The learning rate to train with
@@ -1771,9 +1771,9 @@ class MaskRCNN(nn.Module):
 
         # Data generators
         train_set = Dataset(train_dataset, self.config, augment=True)
-        train_generator = torch.utils.data.DataLoader(train_set, batch_size=1, shuffle=True, num_workers=self.config.NUM_WORKERS)
+        train_generator = torch.utils.data.DataLoader(train_set, batch_size=1, shuffle=True, num_workers=self.num_workers)
         val_set = Dataset(val_dataset, self.config, augment=True)
-        val_generator = torch.utils.data.DataLoader(val_set, batch_size=1, shuffle=True, num_workers=self.config.NUM_WORKERS)
+        val_generator = torch.utils.data.DataLoader(val_set, batch_size=1, shuffle=True, num_workers=self.num_workers)
 
         # Train
         log("\nStarting at epoch {}. LR={}\n".format(self.epoch+1, learning_rate))
@@ -1802,7 +1802,7 @@ class MaskRCNN(nn.Module):
             # Statistics
             self.loss_history.append([loss, loss_rpn_class, loss_rpn_bbox, loss_mrcnn_class, loss_mrcnn_bbox, loss_mrcnn_mask])
             self.val_loss_history.append([val_loss, val_loss_rpn_class, val_loss_rpn_bbox, val_loss_mrcnn_class, val_loss_mrcnn_bbox, val_loss_mrcnn_mask])
-#             visualize.plot_loss(self.loss_history, self.val_loss_history, save=True, log_dir=self.log_dir)
+            visualize.plot_loss(self.loss_history, self.val_loss_history, save=save_plot, log_dir=self.log_dir)
 
             # Save model
             torch.save(self.state_dict(), self.checkpoint_path.format(epoch))
@@ -1915,13 +1915,12 @@ class MaskRCNN(nn.Module):
             image_metas = image_metas.numpy()
 
             # Wrap in variables
-            with torch.no_grad():
-                images = Variable(images)
-                rpn_match = Variable(rpn_match)
-                rpn_bbox = Variable(rpn_bbox)
-                gt_class_ids = Variable(gt_class_ids)
-                gt_boxes = Variable(gt_boxes)
-                gt_masks = Variable(gt_masks)
+            images = Variable(images, volatile=True)
+            rpn_match = Variable(rpn_match, volatile=True)
+            rpn_bbox = Variable(rpn_bbox, volatile=True)
+            gt_class_ids = Variable(gt_class_ids, volatile=True)
+            gt_boxes = Variable(gt_boxes, volatile=True)
+            gt_masks = Variable(gt_masks, volatile=True)
 
             # To GPU
             if self.config.GPU_COUNT:
