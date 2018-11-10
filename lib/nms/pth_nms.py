@@ -7,10 +7,10 @@ def pth_nms(dets, thresh):
   dets has to be a tensor
   """
   if not dets.is_cuda:
-    x1 = dets[:, 1]
-    y1 = dets[:, 0]
-    x2 = dets[:, 3]
-    y2 = dets[:, 2]
+    x1 = dets[:, 0]
+    y1 = dets[:, 1]
+    x2 = dets[:, 2]
+    y2 = dets[:, 3]
     scores = dets[:, 4]
 
     areas = (x2 - x1 + 1) * (y2 - y1 + 1)
@@ -23,18 +23,11 @@ def pth_nms(dets, thresh):
 
     return keep[:num_out[0]]
   else:
-    x1 = dets[:, 1]
-    y1 = dets[:, 0]
-    x2 = dets[:, 3]
-    y2 = dets[:, 2]
+    x1 = dets[:, 0]
+    y1 = dets[:, 1]
+    x2 = dets[:, 2]
+    y2 = dets[:, 3]
     scores = dets[:, 4]
-
-    dets_temp = torch.FloatTensor(dets.size()).cuda()
-    dets_temp[:, 0] = dets[:, 1]
-    dets_temp[:, 1] = dets[:, 0]
-    dets_temp[:, 2] = dets[:, 3]
-    dets_temp[:, 3] = dets[:, 2]
-    dets_temp[:, 4] = dets[:, 4]
 
     areas = (x2 - x1 + 1) * (y2 - y1 + 1)
     order = scores.sort(0, descending=True)[1]
@@ -46,7 +39,7 @@ def pth_nms(dets, thresh):
     num_out = torch.LongTensor(1)
     # keep = torch.cuda.LongTensor(dets.size(0))
     # num_out = torch.cuda.LongTensor(1)
-    nms.gpu_nms(keep, num_out, dets_temp, thresh)
+    nms.gpu_nms(keep, num_out, dets, thresh)
 
     return order[keep[:num_out[0]].cuda()].contiguous()
     # return order[keep[:num_out[0]]].contiguous()
