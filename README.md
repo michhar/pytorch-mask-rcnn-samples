@@ -5,6 +5,8 @@ Inspired by:  https://github.com/multimodallearning/pytorch-mask-rcnn
 ![VGG annotated fish pic](images/vgg_annotated_fish.jpg)
 <br><p align="right">Adult Schoolmaster Snappers (Lutjanus apodus); Source: Florent Charpin, http://reefguide.org/pixhtml/schoolmaster2.html</p><br>
 
+**NOTE**:  This project is working well only with PyTorch 0.3.1.  If you'd like to help update this, please feel free to fork and create a PR.
+
 ## Instructions
 
 * First thing, download the COCO model from [google drive](https://drive.google.com/drive/folders/1LXUgC2IZUYNEoXr05tdqyKFZY0pZyPDc).  You could also choose to start with the ImageNet model.
