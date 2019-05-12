@@ -2,7 +2,7 @@
 
 Inspired by:  https://github.com/multimodallearning/pytorch-mask-rcnn
 
-<img href="images/find_fish.png" width=100px><img href="images/rec_fish.png" width=100px>
+<img src="images/find_fish.png" width=300px><img src="images/rec_fish.png" width=300px>
 
 **NOTES**:
 * This project is working with _PyTorch 0.4.1_.  If you'd like to help update this, please feel free to fork and create a PR.
