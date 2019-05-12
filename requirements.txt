@@ -14,3 +14,4 @@ mkl-include==2019.0
 setuptools
 cmake==3.12.0
 azure
+setuptools
